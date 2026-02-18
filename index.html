@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Alencar Finanças</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <h1>ALENCAR</h1>
+          <span>FINANÇAS</span>
+        </div>
+
+        <nav class="menu" id="mainMenu">
+          <button class="active" data-target="dashboard">🏠 Dashboard</button>
+          <button data-target="entradas">⬇️ Entradas</button>
+          <button data-target="saidas">⬆️ Saídas</button>
+          <button data-target="entregas">🛵 Entregas</button>
+          <button data-target="netflix">📺 Netflix</button>
+          <button data-target="cartoes">💳 Cartões</button>
+          <button data-target="devedores">👥 Devedores</button>
+          <button data-target="relatorios">📄 Relatórios</button>
+        </nav>
+
+        <button id="quickCloseBtn" class="close-month">📅 Fechar Mês</button>
+      </aside>
+
+      <main class="content">
+        <header class="topbar">
+          <h2>Dashboard</h2>
+          <div class="date-pill" id="datePill"></div>
+        </header>
+
+        <section id="dashboard" class="panel active">
+          <div class="cards-grid">
+            <article class="kpi-card lucro">
+              <div class="kpi-icon">💲</div>
+              <div>
+                <small>Lucro Real</small>
+                <h3 id="lucroRealValue">R$ 0,00</h3>
+                <p>Total Entradas - Saídas Lucas</p>
+              </div>
+            </article>
+
+            <article class="kpi-card gastos" id="lucasPanel">
+              <div>
+                <small>Gastos Lucas</small>
+                <h3 id="lucasGasto">R$ 0,00</h3>
+                <p>Limite: R$ 1.000,00</p>
+              </div>
+              <div>
+                <strong id="lucasPercent">0%</strong>
+                <progress id="lucasProgress" max="1000" value="0"></progress>
+              </div>
+            </article>
+
+            <article class="bank-card inter">
+              <small>inter</small>
+              <h3 id="interUso">R$ 0,00</h3>
+              <p>Limite: R$ 2.000,00</p>
+              <progress id="interProgress" max="2000" value="0"></progress>
+              <button id="interReportBtn" class="report-btn">Relatório de gastos do cartão</button>
+            </article>
+
+            <article class="bank-card neon">
+              <small>neon</small>
+              <h3 id="neonUso">R$ 0,00</h3>
+              <p>Limite: R$ 500,00</p>
+              <progress id="neonProgress" max="500" value="0"></progress>
+              <button id="neonReportBtn" class="report-btn">Relatório de gastos do cartão</button>
+            </article>
+          </div>
+
+          <button id="filterBtn" class="filter-btn">🔎 Filtro de Gastos</button>
+
+          <article class="table-card">
+            <h3>🛵 Resumo de Entregas</h3>
+            <div class="table-wrapper">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Categoria</th>
+                    <th>Quantidade</th>
+                    <th>Valor Unitário</th>
+                    <th>Valor Total</th>
+                  </tr>
+                </thead>
+                <tbody id="entregaResumoBody"></tbody>
+              </table>
+            </div>
+          </article>
+        </section>
+
+        <section id="entradas" class="panel">
+          <h3>Entradas</h3>
+          <form id="entradaForm" class="form-grid">
+            <input name="descricao" placeholder="Descrição" required />
+            <input name="valor" type="number" min="0" step="0.01" placeholder="Valor" required />
+            <input name="dataFixa" id="entradaDataFixa" readonly />
+            <button type="submit">Adicionar entrada</button>
+          </form>
+          <ul id="entradaList" class="list"></ul>
+        </section>
+
+        <section id="saidas" class="panel">
+          <h3>Saídas</h3>
+          <form id="saidaForm" class="form-grid">
+            <input name="descricao" placeholder="Descrição" required />
+            <input name="valor" type="number" min="0" step="0.01" placeholder="Valor" required />
+            <select name="responsavel" required>
+              <option value="">Responsável</option>
+              <option>Lucas</option>
+              <option>Casa</option>
+              <option>Empresa</option>
+              <option>Outro</option>
+            </select>
+            <select name="cartao" required>
+              <option value="">Cartão</option>
+              <option>INTER</option>
+              <option>NEON</option>
+              <option>Nenhum</option>
+            </select>
+            <select name="parcelas" required>
+              <option value="">Parcelamento</option>
+              <option value="1">1x</option>
+              <option value="2">2x</option>
+              <option value="3">3x</option>
+              <option value="4">4x</option>
+              <option value="5">5x</option>
+              <option value="6">6x</option>
+              <option value="7">7x</option>
+              <option value="8">8x</option>
+              <option value="9">9x</option>
+              <option value="10">10x</option>
+              <option value="11">11x</option>
+              <option value="12">12x</option>
+            </select>
+            <input name="dataFixa" id="saidaDataFixa" readonly />
+            <button type="submit">Adicionar saída</button>
+          </form>
+          <ul id="saidaList" class="list"></ul>
+        </section>
+
+        <section id="entregas" class="panel">
+          <h3>Módulo de Entregas</h3>
+          <form id="entregaForm" class="form-grid">
+            <select name="categoria" required>
+              <option value="">Categoria</option>
+              <option>iFood</option>
+              <option>Expresso</option>
+              <option>Pripel Postagem</option>
+              <option>Pripel Entregas</option>
+              <option>Brie</option>
+              <option>Lalamove</option>
+              <option>Outros Clientes</option>
+            </select>
+            <input name="quantidade" type="number" min="1" step="1" placeholder="Quantidade" required />
+            <input name="valorUnitario" type="number" min="0" step="0.01" placeholder="Valor Unitário" required />
+            <button type="submit">Registrar entrega</button>
+          </form>
+          <div class="actions-inline">
+            <button id="grupoAReport">WhatsApp Grupo A</button>
+            <button id="grupoBReport">WhatsApp Grupo B</button>
+          </div>
+        </section>
+
+        <section id="netflix" class="panel">
+          <h3>Netflix (R$ 15,00 por pessoa)</h3>
+          <ul id="netflixList" class="list"></ul>
+          <h4>Pendências dos últimos 3 meses</h4>
+          <ul id="netflixPendencias" class="list"></ul>
+        </section>
+
+        <section id="cartoes" class="panel">
+          <h3>Cartões e Limites</h3>
+          <p>Os gastos dos cartões são atualizados automaticamente pelas saídas registradas.</p>
+          <button id="allCardsReportBtn">Mostrar relatório geral dos cartões</button>
+          <button id="lucasReportBtn">Gerar relatório detalhado Lucas</button>
+        </section>
+
+        <section id="devedores" class="panel">
+          <h3>Dívidas Fixas</h3>
+          <form id="dividaForm" class="form-grid">
+            <input name="titulo" placeholder="Título da dívida" required />
+            <input name="valor" type="number" min="0" step="0.01" placeholder="Valor" required />
+            <input name="vencimentoFixo" id="dividaVencimentoFixo" readonly />
+            <button type="submit">Adicionar dívida</button>
+          </form>
+          <ul id="dividaList" class="list"></ul>
+
+          <h3>Lista de Devedores</h3>
+          <form id="devedorForm" class="form-grid">
+            <select id="devedorSelect" name="devedor" required>
+              <option value="">Selecione</option>
+              <option>Priscila</option>
+              <option>Pripel</option>
+              <option>Despesa Casa</option>
+              <option>Marcelo</option>
+              <option>Fernanda</option>
+              <option>David</option>
+              <option>Gorda</option>
+              <option>Outros</option>
+            </select>
+            <input id="devedorOutro" name="devedorOutro" placeholder="Nome do devedor" hidden />
+            <input name="valor" type="number" min="0" step="0.01" placeholder="Valor da dívida" required />
+            <button type="submit">Salvar devedor</button>
+          </form>
+          <ul id="devedorList" class="list"></ul>
+        </section>
+
+        <section id="relatorios" class="panel">
+          <h3>Relatórios e Fechamento</h3>
+          <div class="actions-inline">
+            <button id="fechamentoBtn">Fechamento do Mês (PDF + CSV)</button>
+            <button id="syncSheetsBtn">Sincronizar Google Sheets</button>
+          </div>
+          <div id="loading" class="loading" hidden>Carregando dados da planilha...</div>
+          <pre id="logErro" class="error-log" hidden></pre>
+        </section>
+      </main>
+    </div>
+
+    <nav class="mobile-nav" id="mobileMenu">
+      <button class="active" data-target="dashboard">🏠</button>
+      <button data-target="entradas">⬇️</button>
+      <button data-target="saidas">⬆️</button>
+      <button data-target="entregas">🛵</button>
+      <button data-target="devedores">👥</button>
+      <button data-target="relatorios">📄</button>
+    </nav>
+
+    <script src="app.js"></script>
+  </body>
+</html>
