@@ -7,17 +7,6 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <div id="loginOverlay" class="login-overlay">
-      <form id="loginForm" class="login-box">
-        <h2>ALENCAR FINANÇAS</h2>
-        <p>Acesso restrito</p>
-        <input name="user" placeholder="Usuário" required />
-        <input name="password" type="password" placeholder="Senha" required />
-        <button type="submit">Entrar</button>
-        <small>Demo: admin / 1234</small>
-      </form>
-    </div>
-
     <div class="app-shell">
       <aside class="sidebar">
         <div class="brand">
@@ -73,7 +62,7 @@
               <h3 id="interUso">R$ 0,00</h3>
               <p>Limite: R$ 2.000,00</p>
               <progress id="interProgress" max="2000" value="0"></progress>
-              <input id="interGasto" type="range" min="0" max="2000" value="0" />
+              <button id="interReportBtn" class="report-btn">Relatório de gastos do cartão</button>
             </article>
 
             <article class="bank-card neon">
@@ -81,7 +70,7 @@
               <h3 id="neonUso">R$ 0,00</h3>
               <p>Limite: R$ 500,00</p>
               <progress id="neonProgress" max="500" value="0"></progress>
-              <input id="neonGasto" type="range" min="0" max="500" value="0" />
+              <button id="neonReportBtn" class="report-btn">Relatório de gastos do cartão</button>
             </article>
           </div>
 
@@ -110,7 +99,7 @@
           <form id="entradaForm" class="form-grid">
             <input name="descricao" placeholder="Descrição" required />
             <input name="valor" type="number" min="0" step="0.01" placeholder="Valor" required />
-            <input name="data" type="date" required />
+            <input name="dataFixa" id="entradaDataFixa" readonly />
             <button type="submit">Adicionar entrada</button>
           </form>
           <ul id="entradaList" class="list"></ul>
@@ -128,7 +117,28 @@
               <option>Empresa</option>
               <option>Outro</option>
             </select>
-            <input name="data" type="date" required />
+            <select name="cartao" required>
+              <option value="">Cartão</option>
+              <option>INTER</option>
+              <option>NEON</option>
+              <option>Nenhum</option>
+            </select>
+            <select name="parcelas" required>
+              <option value="">Parcelamento</option>
+              <option value="1">1x</option>
+              <option value="2">2x</option>
+              <option value="3">3x</option>
+              <option value="4">4x</option>
+              <option value="5">5x</option>
+              <option value="6">6x</option>
+              <option value="7">7x</option>
+              <option value="8">8x</option>
+              <option value="9">9x</option>
+              <option value="10">10x</option>
+              <option value="11">11x</option>
+              <option value="12">12x</option>
+            </select>
+            <input name="dataFixa" id="saidaDataFixa" readonly />
             <button type="submit">Adicionar saída</button>
           </form>
           <ul id="saidaList" class="list"></ul>
@@ -166,7 +176,8 @@
 
         <section id="cartoes" class="panel">
           <h3>Cartões e Limites</h3>
-          <p>Use os controles no Dashboard para evolução visual de uso do limite.</p>
+          <p>Os gastos dos cartões são atualizados automaticamente pelas saídas registradas.</p>
+          <button id="allCardsReportBtn">Mostrar relatório geral dos cartões</button>
           <button id="lucasReportBtn">Gerar relatório detalhado Lucas</button>
         </section>
 
@@ -175,7 +186,7 @@
           <form id="dividaForm" class="form-grid">
             <input name="titulo" placeholder="Título da dívida" required />
             <input name="valor" type="number" min="0" step="0.01" placeholder="Valor" required />
-            <input name="vencimento" type="date" required />
+            <input name="vencimentoFixo" id="dividaVencimentoFixo" readonly />
             <button type="submit">Adicionar dívida</button>
           </form>
           <ul id="dividaList" class="list"></ul>

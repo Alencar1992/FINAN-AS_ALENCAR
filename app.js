@@ -10,6 +10,11 @@ const state = {
 };
 
 const fixedEntregaPrices = { 'Pripel Postagem': 5 };
+const LIMITES_CARTAO = { INTER: 2000, NEON: 500 };
+
+function todayISO() {
+  return new Date().toISOString().split('T')[0];
+}
 
 function formatCurrency(v) {
   return BRL.format(Number(v) || 0);
@@ -20,21 +25,6 @@ function openWhatsApp(message) {
   window.open(`https://wa.me/?text=${msg}`, '_blank');
 }
 
-function bindLogin() {
-  const overlay = document.getElementById('loginOverlay');
-  const form = document.getElementById('loginForm');
-
-  form.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const data = Object.fromEntries(new FormData(form));
-    if (data.user === 'admin' && data.password === '1234') {
-      overlay.classList.add('hidden');
-    } else {
-      alert('Acesso negado.');
-    }
-  });
-}
-
 function bindNavigation(menuSelector) {
   const menuButtons = [...document.querySelectorAll(`${menuSelector} button[data-target]`)];
   menuButtons.forEach((btn) => {
@@ -43,28 +33,54 @@ function bindNavigation(menuSelector) {
       document.querySelectorAll('.panel').forEach((panel) => panel.classList.remove('active'));
       document.getElementById(target).classList.add('active');
 
-      document.querySelectorAll('#mainMenu button, #mobileMenu button').forEach((b) => {
-        b.classList.toggle('active', b.dataset.target === target);
+      document.querySelectorAll('#mainMenu button, #mobileMenu button').forEach((button) => {
+        button.classList.toggle('active', button.dataset.target === target);
       });
     });
   });
+}
+
+function applyFixedDates() {
+  const date = todayISO();
+  document.getElementById('entradaDataFixa').value = date;
+  document.getElementById('saidaDataFixa').value = date;
+  document.getElementById('dividaVencimentoFixo').value = date;
 }
 
 function bindEntradasSaidas() {
   document.getElementById('entradaForm').addEventListener('submit', (e) => {
     e.preventDefault();
     const data = Object.fromEntries(new FormData(e.target));
-    state.entradas.push({ ...data, valor: Number(data.valor) });
+
+    state.entradas.push({
+      descricao: data.descricao,
+      valor: Number(data.valor),
+      data: todayISO()
+    });
+
     e.target.reset();
+    applyFixedDates();
     renderEntradasSaidas();
   });
 
   document.getElementById('saidaForm').addEventListener('submit', (e) => {
     e.preventDefault();
     const data = Object.fromEntries(new FormData(e.target));
-    state.saidas.push({ ...data, valor: Number(data.valor) });
+
+    state.saidas.push({
+      descricao: data.descricao,
+      valor: Number(data.valor),
+      responsavel: data.responsavel,
+      cartao: data.cartao,
+      parcelas: Number(data.parcelas),
+      valorParcela: Number(data.valor) / Number(data.parcelas),
+      data: todayISO()
+    });
+
     e.target.reset();
+    applyFixedDates();
     renderEntradasSaidas();
+    renderCardUsage();
   });
 }
 
@@ -74,7 +90,12 @@ function renderEntradasSaidas() {
     .join('');
 
   document.getElementById('saidaList').innerHTML = state.saidas
-    .map((item) => `<li>${item.data} · ${item.descricao} (${item.responsavel}): <strong>${formatCurrency(item.valor)}</strong></li>`)
+    .map((item) => `
+      <li>
+        ${item.data} · ${item.descricao} (${item.responsavel}) · ${item.cartao} · ${item.parcelas}x de ${formatCurrency(item.valorParcela)}
+        <strong>${formatCurrency(item.valor)}</strong>
+      </li>
+    `)
     .join('');
 
   updateLucasPanel();
@@ -99,11 +120,13 @@ function bindEntregas() {
   form.addEventListener('submit', (e) => {
     e.preventDefault();
     const data = Object.fromEntries(new FormData(form));
-    const categoria = data.categoria;
-    const quantidade = Number(data.quantidade);
-    const valorUnitario = fixedEntregaPrices[categoria] ?? Number(data.valorUnitario);
 
-    state.entregas.push({ categoria, quantidade, valorUnitario });
+    state.entregas.push({
+      categoria: data.categoria,
+      quantidade: Number(data.quantidade),
+      valorUnitario: fixedEntregaPrices[data.categoria] ?? Number(data.valorUnitario)
+    });
+
     form.reset();
     valorEl.readOnly = false;
     renderEntregaResumo();
@@ -176,19 +199,41 @@ function initNetflix() {
   });
 }
 
-function bindCartoes() {
-  const cards = [
-    { input: 'interGasto', progress: 'interProgress', label: 'interUso' },
-    { input: 'neonGasto', progress: 'neonProgress', label: 'neonUso' }
-  ];
+function getCardTotals() {
+  const inter = state.saidas.filter((item) => item.cartao === 'INTER').reduce((acc, item) => acc + item.valor, 0);
+  const neon = state.saidas.filter((item) => item.cartao === 'NEON').reduce((acc, item) => acc + item.valor, 0);
+  return { INTER: inter, NEON: neon };
+}
 
-  cards.forEach((card) => {
-    const input = document.getElementById(card.input);
-    input.addEventListener('input', () => {
-      const value = Number(input.value);
-      document.getElementById(card.progress).value = value;
-      document.getElementById(card.label).textContent = formatCurrency(value);
-    });
+function renderCardUsage() {
+  const totals = getCardTotals();
+  document.getElementById('interUso').textContent = formatCurrency(totals.INTER);
+  document.getElementById('neonUso').textContent = formatCurrency(totals.NEON);
+  document.getElementById('interProgress').value = Math.min(totals.INTER, LIMITES_CARTAO.INTER);
+  document.getElementById('neonProgress').value = Math.min(totals.NEON, LIMITES_CARTAO.NEON);
+}
+
+function buildCardReport(cardName) {
+  const gastos = state.saidas.filter((item) => item.cartao === cardName);
+  const total = gastos.reduce((acc, item) => acc + item.valor, 0);
+  if (!gastos.length) {
+    return `${cardName}\nSem gastos registrados.`;
+  }
+
+  const linhas = gastos
+    .map((item) => `- ${item.data} | ${item.descricao} | ${item.parcelas}x de ${formatCurrency(item.valorParcela)} | Total ${formatCurrency(item.valor)}`)
+    .join('\n');
+
+  return `${cardName}\nTotal: ${formatCurrency(total)}\n\n${linhas}`;
+}
+
+function bindCardReports() {
+  document.getElementById('interReportBtn').addEventListener('click', () => alert(buildCardReport('INTER')));
+  document.getElementById('neonReportBtn').addEventListener('click', () => alert(buildCardReport('NEON')));
+
+  document.getElementById('allCardsReportBtn').addEventListener('click', () => {
+    const report = `${buildCardReport('INTER')}\n\n${buildCardReport('NEON')}`;
+    alert(report);
   });
 
   document.getElementById('lucasReportBtn').addEventListener('click', () => {
@@ -233,8 +278,15 @@ function bindDevedores() {
   formDivida.addEventListener('submit', (e) => {
     e.preventDefault();
     const data = Object.fromEntries(new FormData(formDivida));
-    state.dividas.push({ id: crypto.randomUUID(), ...data, valor: Number(data.valor), quitada: false });
+    state.dividas.push({
+      id: crypto.randomUUID(),
+      titulo: data.titulo,
+      valor: Number(data.valor),
+      vencimento: todayISO(),
+      quitada: false
+    });
     formDivida.reset();
+    applyFixedDates();
     renderDividas();
   });
 
@@ -256,7 +308,7 @@ function renderDividas() {
   list.innerHTML = state.dividas
     .map((item) => `
       <li>
-        <strong>${item.titulo}</strong> · ${formatCurrency(item.valor)} · ${item.quitada ? 'Quitada' : 'Aberta'}
+        <strong>${item.titulo}</strong> · ${formatCurrency(item.valor)} · Venc.: ${item.vencimento} · ${item.quitada ? 'Quitada' : 'Aberta'}
         <div class="actions-inline">
           <button data-edit="${item.id}">Editar</button>
           <button data-quit="${item.id}">Quitar</button>
@@ -346,9 +398,9 @@ function exportFechamento() {
   };
 
   const csv = [
-    'tipo,descricao,valor,data',
-    ...state.entradas.map((item) => `entrada,${item.descricao},${item.valor},${item.data}`),
-    ...state.saidas.map((item) => `saida,${item.descricao},${item.valor},${item.data}`)
+    'tipo,descricao,valor,data,cartao,parcelas,valorParcela',
+    ...state.entradas.map((item) => `entrada,${item.descricao},${item.valor},${item.data},,,`),
+    ...state.saidas.map((item) => `saida,${item.descricao},${item.valor},${item.data},${item.cartao},${item.parcelas},${item.valorParcela}`)
   ].join('\n');
 
   downloadFile('fechamento-mensal.csv', 'text/csv', csv);
@@ -394,18 +446,19 @@ function initFilterHint() {
   });
 }
 
-bindLogin();
 bindNavigation('#mainMenu');
 bindNavigation('#mobileMenu');
+applyFixedDates();
 bindEntradasSaidas();
 bindEntregas();
 initNetflix();
-bindCartoes();
+bindCardReports();
 bindDevedores();
 bindRelatorios();
 initTopbarDate();
 initFilterHint();
 renderEntradasSaidas();
 renderEntregaResumo();
+renderCardUsage();
 renderDividas();
 renderDevedores();

@@ -177,6 +177,14 @@ button {
 }
 .actions-inline { display: flex; gap: 0.6rem; flex-wrap: wrap; }
 
+.report-btn {
+  margin-top: 0.7rem;
+  width: 100%;
+  background: #0f172a;
+  border: 1px solid #94a3b8;
+  color: #e2e8f0;
+}
+
 .list {
   list-style: none;
   padding: 0;
@@ -226,27 +234,6 @@ button {
   gap: 0.4rem;
 }
 .mobile-nav button.active { background: #4b64f0; }
-
-.login-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 30;
-  background: #020617cc;
-  display: grid;
-  place-items: center;
-}
-.login-box {
-  width: min(92vw, 360px);
-  display: grid;
-  gap: 0.65rem;
-  background: #0f172a;
-  border: 1px solid #334155;
-  border-radius: 16px;
-  padding: 1.2rem;
-}
-.login-box h2, .login-box p { margin: 0; }
-.login-box small { color: #93c5fd; }
-.login-overlay.hidden { display: none; }
 
 @media (max-width: 900px) {
   .app-shell { grid-template-columns: 1fr; }
